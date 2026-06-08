@@ -104,12 +104,6 @@
       font-size: 20px;
       flex: 0 0 auto;
     }
-    .room-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
-    }
     .chip {
       min-height: 42px;
       border-radius: 999px;
@@ -194,24 +188,6 @@
       font-weight: 850;
     }
     .warn-note.show { display: block; }
-    .info-card {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 22px;
-      background: #f1ecff;
-      border: 1px solid #e4dafa;
-      color: #55606d;
-      font-size: 13px;
-      line-height: 1.5;
-      font-weight: 800;
-    }
-    .info-card b {
-      display: block;
-      margin-bottom: 5px;
-      color: #3f365e;
-      font-size: 14px;
-      font-weight: 950;
-    }
     .seat-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -392,8 +368,8 @@
   <main class="app">
     <section class="hero">
       <div class="badge" aria-hidden="true">🧹</div>
-      <h1 id="heroTitle">PA 청소분담표 생성기</h1>
-      <p class="intro" id="heroIntro">호실과 청소점검 날짜를 입력하면<br>16개 청소 역할이 자동으로 섞여 배정됩니다.<br>같은 호실과 같은 날짜라면 모든 기기에서 같은 결과가 나옵니다.</p>
+      <h1 id="heroTitle">PA 랜덤청소분담</h1>
+      <p class="intro" id="heroIntro">호실과 날짜를 입력하면<br>16개 청소 역할이 자동으로 배정됩니다.</p>
     </section>
 
     <form class="card" id="entryForm">
@@ -401,12 +377,7 @@
         <p class="section-label">입력</p>
         <label class="field">
           <span>호실</span>
-          <input id="roomInput" name="room" inputmode="numeric" autocomplete="off" placeholder="404" required>
-          <div class="room-row" aria-label="호실 빠른 선택">
-            <button class="chip" type="button" data-room="404">404호</button>
-            <button class="chip" type="button" data-room="405">405호</button>
-            <button class="chip" type="button" data-room="406">406호</button>
-          </div>
+          <input id="roomInput" name="room" inputmode="numeric" autocomplete="off" placeholder="예) 404" required>
         </label>
 
         <div class="field">
@@ -442,13 +413,7 @@
           </div>
         </section>
 
-        <div class="info-card">
-          <b>🎲 복합 시드 기반 공정 랜덤이란?</b>
-          호실, 날짜, 침대번호, 청소 역할 번호를 함께 계산해 배정하는 고정 랜덤 방식입니다. 같은 조건으로 접속하면 모든 기기에서 같은 결과가 나오며, 단순 순서 배정이 아니라 각 역할과 침대번호의 조합 점수를 계산해 배정됩니다.
-        </div>
-
-        <button class="next" id="nextButton" type="button">공정 랜덤 배정 시작</button>
-        <p class="hint">배정 결과는 호실+날짜 기준으로 고정됩니다.<br>다시 접속해도 같은 청소분담표를 확인할 수 있습니다.</p>
+        <button class="next" id="nextButton" type="button">랜덤 청소분담 시작</button>
       </section>
 
       <section class="step" id="stepTwo">
@@ -541,12 +506,6 @@
     function serializeSet(set) {
       return Array.from(set).join(",");
     }
-    function syncRoomChips() {
-      const current = normalizeRoom(roomInput.value);
-      document.querySelectorAll("[data-room]").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.room === current);
-      });
-    }
     function updateDateDisplay() {
       dateDisplay.textContent = displayDate(selectedDate);
     }
@@ -558,10 +517,10 @@
       const isStepTwo = step === 2;
       document.getElementById("stepOne").classList.toggle("active", !isStepTwo);
       document.getElementById("stepTwo").classList.toggle("active", isStepTwo);
-      document.getElementById("heroTitle").textContent = isStepTwo ? "내 침대번호 선택" : "PA 청소분담표 생성기";
+      document.getElementById("heroTitle").textContent = isStepTwo ? "내 침대번호 선택" : "PA 랜덤청소분담";
       document.getElementById("heroIntro").innerHTML = isStepTwo
         ? "내 침대번호를 선택하면<br>내 청소분담이 맨 위에 표시됩니다."
-        : "호실과 청소점검 날짜를 입력하면<br>16개 청소 역할이 자동으로 섞여 배정됩니다.<br>같은 호실과 같은 날짜라면 모든 기기에서 같은 결과가 나옵니다.";
+        : "호실과 날짜를 입력하면<br>16개 청소 역할이 자동으로 배정됩니다.";
       if (isStepTwo) updateSelectedInfo();
     }
     function openCalendar() {
@@ -689,13 +648,6 @@
     });
     updateExcludeSummary();
 
-    document.querySelectorAll("[data-room]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        roomInput.value = btn.dataset.room;
-        syncRoomChips();
-      });
-    });
-    roomInput.addEventListener("input", syncRoomChips);
     document.getElementById("dateButton").addEventListener("click", openCalendar);
     document.getElementById("toggleExcludeSeats").addEventListener("click", () => {
       document.getElementById("excludeSeatPanel").classList.toggle("open");
@@ -743,7 +695,6 @@
       location.href = `00-index.html?${query.toString()}`;
     });
 
-    syncRoomChips();
     document.getElementById("sharedNotice").classList.toggle("show", hasSharedRoomDate);
     setStep(hasSharedRoomDate ? 2 : 1);
   </script>
